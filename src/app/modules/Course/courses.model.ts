@@ -17,64 +17,78 @@ const courseTagsSchema = new Schema<TCourseTags>(
   },
 );
 
-const courseDetailsSchema = new Schema<TCourseDetails>({
-  level: {
-    type: String,
-    required: true,
+const courseDetailsSchema = new Schema<TCourseDetails>(
+  {
+    level: {
+      type: String,
+      required: true,
+    },
+    description: {
+      type: String,
+      required: true,
+    },
   },
-  description: {
-    type: String,
-    required: true,
+  {
+    _id: false,
   },
-});
+);
 
-const courseSchema = new Schema<TCourse>({
-  title: {
-    type: String,
-    required: true,
-    unique: true,
+const courseSchema = new Schema<TCourse>(
+  {
+    title: {
+      type: String,
+      required: true,
+      unique: true,
+    },
+    instructor: {
+      type: String,
+      required: true,
+    },
+    categoryId: {
+      type: Schema.Types.ObjectId,
+      ref: "Category",
+      required: true,
+    },
+    price: {
+      type: Number,
+      required: true,
+    },
+    tags: {
+      type: [courseTagsSchema],
+    },
+    startDate: {
+      type: String,
+      required: true,
+    },
+    endDate: {
+      type: String,
+      required: true,
+    },
+    language: {
+      type: String,
+      required: true,
+    },
+    provider: {
+      type: String,
+      required: true,
+    },
+    durationInWeeks: {
+      type: Number,
+    },
+    details: {
+      type: courseDetailsSchema,
+    },
+    createdBy: {
+      type: Schema.Types.ObjectId,
+      ref: "User",
+    },
   },
-  instructor: {
-    type: String,
-    required: true,
+  {
+    timestamps: true,
   },
-  categoryId: {
-    type: Schema.Types.ObjectId,
-    ref: "Category",
-    required: true,
-  },
-  price: {
-    type: Number,
-    required: true,
-  },
-  tags: {
-    type: [courseTagsSchema],
-  },
-  startDate: {
-    type: String,
-    required: true,
-  },
-  endDate: {
-    type: String,
-    required: true,
-  },
-  language: {
-    type: String,
-    required: true,
-  },
-  provider: {
-    type: String,
-    required: true,
-  },
-  durationInWeeks: {
-    type: Number,
-  },
-  details: {
-    type: courseDetailsSchema,
-  },
-});
+);
 
-// Calculating the durationInWeeks if not provided
+// Setting durationInWeeks
 courseSchema.pre("save", async function (next) {
   if (this.startDate && this.endDate && !this.durationInWeeks) {
     const startTime = new Date(this.startDate as string);

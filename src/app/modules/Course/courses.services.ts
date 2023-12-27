@@ -2,14 +2,39 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable no-unused-vars */
 
+import config from "../../config";
 import { Review } from "../Review/review.model";
+import { User } from "../User/user.model";
 import { TCourse } from "./courses.interface";
 import { Course } from "./courses.model";
+import jwt, { JwtPayload } from "jsonwebtoken";
 
 //Creating a course
-const createCourseIntoDB = async (payload: TCourse) => {
-  const result = await Course.create(payload);
-  return result;
+const createCourseIntoDB = async (payload: TCourse, token: string) => {
+  if (!token) {
+    return null;
+  }
+
+  const decoded = jwt.verify(
+    token,
+    config.jwt_access_secret as string,
+  ) as JwtPayload;
+
+  if (decoded?.role !== "admin") {
+    return null;
+  }
+
+  const isUserExist = await User.findById(decoded._id);
+  if (!isUserExist) {
+    return null;
+  }
+
+  const courseData = { ...payload, createdBy: decoded._id };
+  const result = await Course.create(courseData);
+
+  // Fetching data for proper response format
+  const responseData = await Course.findById(result._id).select("-__v");
+  return responseData;
 };
 
 //Getting all courses with or without query
@@ -72,6 +97,8 @@ const getAllCoursesFromDB = async (query: Record<string, unknown>) => {
   // Making query to database and paginating
   const searchQuery = await Course.find(querObj)
     .sort(sortObj)
+    .select("-__v")
+    .populate({ path: "createdBy", select: "_id username email role" })
     .skip(skip)
     .limit(Number(limit));
 

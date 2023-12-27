@@ -3,9 +3,22 @@ import {
   getAllCategoriesFromDB,
 } from "./category.services";
 import catchAsync from "../../utils/catchAsync";
+import status from "http-status";
 
 const createCategory = catchAsync(async (req, res) => {
-  const result = await createCategoryIntoDB(req.body);
+  const token = req.headers.authorization;
+  const result = await createCategoryIntoDB(req.body, token as string);
+
+  if (result === null) {
+    res.status(status.UNAUTHORIZED).json({
+      success: false,
+      message: "Unauthorized Access",
+      errorMessage:
+        "You do not have the necessary permissions to access this resource.",
+      errorDetails: null,
+      stack: null,
+    });
+  }
 
   res.status(200).json({
     success: true,

@@ -22,6 +22,7 @@ const courseValidationSchema = z.object({
   provider: z.string(),
   durationInWeeks: z.number().optional(),
   details: courseDetailsValidationSchema,
+  createdBy: z.string().optional(),
 });
 
 // Updating validations

@@ -6,9 +6,22 @@ import {
   upadteCourseIntoDB,
 } from "./courses.services";
 import catchAsync from "../../utils/catchAsync";
+import status from "http-status";
 
 const createCourse = catchAsync(async (req, res) => {
-  const result = await createCourseIntoDB(req.body);
+  const token = req.headers.authorization;
+  const result = await createCourseIntoDB(req.body, token as string);
+
+  if (result === null) {
+    res.status(status.UNAUTHORIZED).json({
+      success: false,
+      message: "Unauthorized Access",
+      errorMessage:
+        "You do not have the necessary permissions to access this resource.",
+      errorDetails: null,
+      stack: null,
+    });
+  }
 
   res.status(201).json({
     success: true,

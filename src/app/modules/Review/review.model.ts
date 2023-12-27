@@ -15,6 +15,10 @@ const reviewSchema = new Schema<TReview>({
     type: String,
     required: true,
   },
+  createdBy: {
+    type: Schema.Types.ObjectId,
+    ref: "User",
+  },
 });
 
 export const Review = model<TReview>("Review", reviewSchema);
