@@ -1,5 +1,5 @@
 import catchAsync from "../../utils/catchAsync";
-import { registerUserIntoDB } from "./user.services";
+import { loginUserService, registerUserIntoDB } from "./user.services";
 
 const registerUser = catchAsync(async (req, res) => {
   const result = await registerUserIntoDB(req.body);
@@ -12,4 +12,18 @@ const registerUser = catchAsync(async (req, res) => {
   });
 });
 
-export { registerUser };
+const loginUser = catchAsync(async (req, res) => {
+  const { userData, accessToken } = await loginUserService(req.body);
+
+  res.status(201).json({
+    success: true,
+    statusCode: 201,
+    message: "User login successful",
+    data: {
+      user: userData,
+      token: accessToken,
+    },
+  });
+});
+
+export { registerUser, loginUser };

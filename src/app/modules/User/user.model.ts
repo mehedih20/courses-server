@@ -1,9 +1,20 @@
 import { Schema, model } from "mongoose";
-import { TUser } from "./user.interface";
+import { TUser, TUserLogin, UserModel } from "./user.interface";
 import bcrypt from "bcrypt";
 import config from "../../config";
 
-const userSchema = new Schema<TUser>(
+export const userLoginSchema = new Schema<TUserLogin>({
+  username: {
+    type: String,
+    required: true,
+  },
+  password: {
+    type: String,
+    required: true,
+  },
+});
+
+const userSchema = new Schema<TUser, UserModel>(
   {
     username: {
       type: String,
@@ -40,4 +51,12 @@ userSchema.pre("save", async function (next) {
   next();
 });
 
-export const User = model<TUser>("User", userSchema);
+// Verifying the hashed password
+userSchema.statics.checkHashedPassword = async function (
+  plainTextPassword,
+  hashedPassword,
+) {
+  return await bcrypt.compare(plainTextPassword, hashedPassword);
+};
+
+export const User = model<TUser, UserModel>("User", userSchema);

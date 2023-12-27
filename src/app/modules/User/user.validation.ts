@@ -7,6 +7,12 @@ const userValidationSchema = z.object({
   role: z.enum(["user", "admin"]),
 });
 
+const userLoginValidationSchema = z.object({
+  username: z.string(),
+  password: z.string(),
+});
+
 export const userValidation = {
   userValidationSchema,
+  userLoginValidationSchema,
 };

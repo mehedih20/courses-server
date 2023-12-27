@@ -17,6 +17,7 @@ const validationErrorMessageGenerator = (
 
 const zodErrorMessageGenerator = (err: ZodError): string => {
   let errorMessage = "";
+
   err?.issues.map(
     (item: ZodIssue) =>
       (errorMessage += `${
@@ -31,6 +32,7 @@ const globalErrorHandler: ErrorRequestHandler = (err, req, res, next) => {
   const statusCode = 500;
   let message = "Something went wrong";
   let errorMessage;
+  let errorDetails;
 
   if (err instanceof ZodError) {
     //zod error
@@ -58,8 +60,8 @@ const globalErrorHandler: ErrorRequestHandler = (err, req, res, next) => {
     success: false,
     message,
     errorMessage,
-    errorDetails: err,
-    stack: err?.stack,
+    errorDetails: err || errorDetails,
+    stack: err?.stack || null,
   });
 };
 
