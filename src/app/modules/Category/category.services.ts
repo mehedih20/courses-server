@@ -23,8 +23,8 @@ const createCategoryIntoDB = async (payload: TCategory, token: string) => {
     return null;
   }
 
-  const courseData = { ...payload, createdBy: decoded._id };
-  const result = await Category.create(courseData);
+  const categoryData = { ...payload, createdBy: decoded._id };
+  const result = await Category.create(categoryData);
   const responseData = await Category.findById(result._id).select("-__v");
   return responseData;
 };
