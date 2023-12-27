@@ -148,7 +148,29 @@ const getBestCourseFromDB = async () => {
 };
 
 //Dynamically updating course information
-const upadteCourseIntoDB = async (id: string, payload: Partial<TCourse>) => {
+const upadteCourseIntoDB = async (
+  id: string,
+  payload: Partial<TCourse>,
+  token: string,
+) => {
+  if (!token) {
+    return null;
+  }
+
+  const decoded = jwt.verify(
+    token,
+    config.jwt_access_secret as string,
+  ) as JwtPayload;
+
+  if (decoded?.role !== "admin") {
+    return null;
+  }
+
+  const isUserExist = await User.findById(decoded._id);
+  if (!isUserExist) {
+    return null;
+  }
+
   const { tags, details, ...remainingBasicData } = payload;
 
   //If durationInWeeks is not provided then deriving it
@@ -226,7 +248,9 @@ const upadteCourseIntoDB = async (id: string, payload: Partial<TCourse>) => {
     );
   }
 
-  const updatedCourse = await Course.findById(id);
+  const updatedCourse = await Course.findById(id)
+    .populate({ path: "createdBy", select: "_id username email role" })
+    .select("-__v");
 
   return updatedCourse;
 };
