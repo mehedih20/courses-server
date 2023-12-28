@@ -7,11 +7,22 @@ export type TUserLogin = {
   password: string;
 };
 
+export type TPasswordHistory = {
+  password: string;
+  createdAt: Date;
+};
+
+export type TPasswordChange = {
+  currentPassword: string;
+  newPassword: string;
+};
+
 export type TUser = {
   username: string;
   email: string;
   password: string;
   role: "user" | "admin";
+  passwordHistory: [TPasswordHistory];
 };
 
 export interface UserModel extends Model<TUser> {

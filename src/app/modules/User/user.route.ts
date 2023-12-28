@@ -1,7 +1,7 @@
 import { Router } from "express";
 import validateData from "../../middlewares/validateData";
 import { userValidation } from "./user.validation";
-import { loginUser, registerUser } from "./user.controller";
+import { changeUserPassword, loginUser, registerUser } from "./user.controller";
 
 const router = Router();
 
@@ -15,6 +15,12 @@ router.post(
   "/auth/login",
   validateData(userValidation.userLoginValidationSchema),
   loginUser,
+);
+
+router.post(
+  "/auth/change-password",
+  validateData(userValidation.passwordChangeValidationSchema),
+  changeUserPassword,
 );
 
 export const UserRoutes = router;

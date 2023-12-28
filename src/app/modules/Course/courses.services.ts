@@ -114,11 +114,14 @@ const getAllCoursesFromDB = async (query: Record<string, unknown>) => {
 
 //Getting course by id with reviews
 const getSingleCourseWithReviewsFromDB = async (courseId: string) => {
-  const courseData = await Course.findById(courseId).select("-__v");
-  const reviewData = await Review.find(
-    { courseId },
-    { courseId: true, rating: true, review: true, _id: false },
-  );
+  const courseData = await Course.findById(courseId)
+    .populate({ path: "createdBy", select: "_id username email role" })
+    .select("-__v");
+
+  const reviewData = await Review.find({ courseId })
+    .select("-_id courseId rating review createdBy")
+    .populate({ path: "createdBy", select: "_id username email role" });
+
   return { course: courseData, reviews: reviewData };
 };
 
@@ -138,7 +141,9 @@ const getBestCourseFromDB = async () => {
   ]);
 
   const { _id, averageValue, reviewValue } = reviewData[0];
-  const course = await Course.findById(_id).select("-__v");
+  const course = await Course.findById(_id)
+    .populate({ path: "createdBy", select: "_id username email role" })
+    .select("-__v");
 
   return {
     course,
