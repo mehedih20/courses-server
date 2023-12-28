@@ -80,12 +80,9 @@ const changeUserPasswordService = async (
   );
 
   if (!currentPasswordCheck) {
-    const date = user.passwordHistory[0].createdAt;
-
+    const time = getFormattedTime(user.passwordHistory[0].createdAt);
     throw new Error(
-      `Password change failed. Ensure the new password is unique and not among the last 2 used (last used on ${getFormattedTime(
-        date,
-      )}).`,
+      `Password change failed. Ensure the new password is unique and not among the last 2 used (last used on ${time}).`,
     );
   }
 
@@ -96,13 +93,10 @@ const changeUserPasswordService = async (
       item.password,
     );
 
-    if (!checkResult) {
-      const date = item.createdAt;
-
+    if (checkResult) {
+      const time = getFormattedTime(item.createdAt);
       throw new Error(
-        `Password change failed. Ensure the new password is unique and not among the last 2 used (last used on ${getFormattedTime(
-          date,
-        )}).`,
+        `Password change failed. Ensure the new password is unique and not among the last 2 used (last used on ${time}).`,
       );
     }
   }
@@ -113,12 +107,11 @@ const changeUserPasswordService = async (
     Number(config.bcrypt_salt_rounds),
   );
 
-  const time = new Date();
   const passwordLimit = 3;
 
   user.passwordHistory.unshift({
     password: newHashedPassword,
-    createdAt: time,
+    createdAt: new Date(),
   });
 
   if (user.passwordHistory.length > passwordLimit) {
@@ -138,7 +131,7 @@ const changeUserPasswordService = async (
     {
       new: true,
     },
-  );
+  ).select("-password -passwordHistory -__v");
 
   return result;
 };

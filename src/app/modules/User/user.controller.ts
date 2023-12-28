@@ -36,10 +36,10 @@ const changeUserPassword = catchAsync(async (req, res) => {
     const token = req.headers.authorization as string;
     const result = await changeUserPasswordService(req.body, token);
 
-    res.status(201).json({
+    res.status(200).json({
       success: true,
-      statusCode: 201,
-      message: "Password change successful",
+      statusCode: 200,
+      message: "Password changed successfully",
       data: result,
     });
   } catch (err: any) {
