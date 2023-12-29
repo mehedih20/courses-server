@@ -30,5 +30,4 @@
 
 8. Finally when the app in running on localhost, api calls can be made
 
-9. The api documentation for the project can be found in the link below
-   [Api Documentaion](https://documenter.getpostman.com/view/13553956/2s9YsDjEEc)
+9. The api documentation for the project can be found in the link : [Api Documentaion](https://documenter.getpostman.com/view/13553956/2s9YsDjEEc)
