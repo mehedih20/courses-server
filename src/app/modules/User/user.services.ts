@@ -18,7 +18,7 @@ const loginUserService = async (payload: TUserLogin) => {
   const user = await User.findOne({ username: payload.username });
 
   if (!user) {
-    throw new Error("User not found!");
+    throw new Error("User not found");
   }
 
   //Checking if password
@@ -28,7 +28,7 @@ const loginUserService = async (payload: TUserLogin) => {
   );
 
   if (!passwordCheck) {
-    throw new Error("Incorrect password!");
+    throw new Error("Incorrect password");
   }
 
   const jwtPayload = {
@@ -70,6 +70,10 @@ const changeUserPasswordService = async (
     throw new Error("Unauthorized Access");
   }
 
+  const currentPasswordTime = getFormattedTime(
+    user.passwordHistory.currentPasswordCreatedAt,
+  );
+
   // checking current password
   const currentPasswordCheck = await bcrypt.compare(
     payload.currentPassword,
@@ -77,11 +81,14 @@ const changeUserPasswordService = async (
   );
 
   if (!currentPasswordCheck) {
-    const time = getFormattedTime(
-      user.passwordHistory.currentPasswordCreatedAt,
-    );
     throw new Error(
-      `Password change failed. Ensure the new password is unique and not among the last 2 used (last used on ${time}).`,
+      `Password change failed. Ensure the new password is unique and not among the last 2 used (last used on ${currentPasswordTime}).`,
+    );
+  }
+
+  if (payload.currentPassword === payload.newPassword) {
+    throw new Error(
+      `Password change failed. Ensure the new password is unique and not among the last 2 used (last used on ${currentPasswordTime}).`,
     );
   }
 
@@ -93,11 +100,8 @@ const changeUserPasswordService = async (
     );
 
     if (checkResult) {
-      const time = getFormattedTime(
-        user.passwordHistory.currentPasswordCreatedAt,
-      );
       throw new Error(
-        `Password change failed. Ensure the new password is unique and not among the last 2 used (last used on ${time}).`,
+        `Password change failed. Ensure the new password is unique and not among the last 2 used (last used on ${currentPasswordTime}).`,
       );
     }
   }

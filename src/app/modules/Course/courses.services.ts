@@ -1,14 +1,12 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable no-unused-vars */
-
-import config from "../../config";
+import { Category } from "../Category/category.model";
 import { Review } from "../Review/review.model";
 import { User } from "../User/user.model";
 import { checkToken } from "../User/user.utility";
 import { TCourse } from "./courses.interface";
 import { Course } from "./courses.model";
-import jwt, { JwtPayload } from "jsonwebtoken";
 
 //Creating a course
 const createCourseIntoDB = async (payload: TCourse, token: string) => {
@@ -25,6 +23,11 @@ const createCourseIntoDB = async (payload: TCourse, token: string) => {
   const isUserExist = await User.findById(decoded._id);
   if (!isUserExist) {
     throw new Error("Unauthorized Access");
+  }
+
+  const checkCategoryIdExists = await Category.findById(payload.categoryId);
+  if (!checkCategoryIdExists) {
+    throw new Error("Invalid categoryId");
   }
 
   const courseData = { ...payload, createdBy: decoded._id };
@@ -117,7 +120,7 @@ const getSingleCourseWithReviewsFromDB = async (courseId: string) => {
     .select("-__v");
 
   const reviewData = await Review.find({ courseId })
-    .select("-_id courseId rating review createdBy")
+    .select("-__v")
     .populate({ path: "createdBy", select: "_id username email role" });
 
   return { course: courseData, reviews: reviewData };

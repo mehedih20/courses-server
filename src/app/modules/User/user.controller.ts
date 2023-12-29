@@ -19,58 +19,29 @@ const registerUser = catchAsync(async (req, res) => {
 });
 
 const loginUser = catchAsync(async (req, res) => {
-  try {
-    const { userData, accessToken } = await loginUserService(req.body);
+  const { userData, accessToken } = await loginUserService(req.body);
 
-    res.status(status.OK).json({
-      success: true,
-      statusCode: 201,
-      message: "User login successful",
-      data: {
-        user: userData,
-        token: accessToken,
-      },
-    });
-  } catch (err: any) {
-    const errorStatus =
-      err.message === "User not found!"
-        ? status.NOT_FOUND
-        : status.UNAUTHORIZED;
-
-    const errorMessage =
-      err.message === "User not found!"
-        ? "No user found for the credentials you provided"
-        : "Please provide the correct password. Username and password doesn't match.";
-
-    res.status(errorStatus).json({
-      success: false,
-      message: err.message,
-      errorMessage,
-      errorDetails: null,
-      stack: null,
-    });
-  }
+  res.status(status.OK).json({
+    success: true,
+    statusCode: 200,
+    message: "User login successful",
+    data: {
+      user: userData,
+      token: accessToken,
+    },
+  });
 });
 
 const changeUserPassword = catchAsync(async (req, res) => {
-  try {
-    const token = req.headers.authorization as string;
-    const result = await changeUserPasswordService(req.body, token);
+  const token = req.headers.authorization as string;
+  const result = await changeUserPasswordService(req.body, token);
 
-    res.status(status.OK).json({
-      success: true,
-      statusCode: 200,
-      message: "Password changed successfully",
-      data: result,
-    });
-  } catch (err: any) {
-    res.status(status.BAD_REQUEST).json({
-      success: false,
-      statusCode: 400,
-      message: err?.message,
-      data: null,
-    });
-  }
+  res.status(status.OK).json({
+    success: true,
+    statusCode: 200,
+    message: "Password changed successfully",
+    data: result,
+  });
 });
 
 export { registerUser, loginUser, changeUserPassword };
