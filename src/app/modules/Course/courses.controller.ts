@@ -24,7 +24,7 @@ const createCourse = catchAsync(async (req, res) => {
 const getAllCourses = catchAsync(async (req, res) => {
   const result = await getAllCoursesFromDB(req.query);
 
-  res.status(200).json({
+  res.status(status.OK).json({
     success: true,
     statusCode: 200,
     message: "Courses retrieved successfully",
@@ -39,7 +39,7 @@ const getSingleCourseWithReviews = catchAsync(async (req, res) => {
   const { courseId } = req.params;
   const result = await getSingleCourseWithReviewsFromDB(courseId);
 
-  res.status(200).json({
+  res.status(status.OK).json({
     success: true,
     statusCode: 200,
     message: "Course with reviews retrieved successfully",
@@ -50,7 +50,7 @@ const getSingleCourseWithReviews = catchAsync(async (req, res) => {
 const getBestCourse = catchAsync(async (req, res) => {
   const result = await getBestCourseFromDB();
 
-  res.status(200).json({
+  res.status(status.OK).json({
     success: true,
     statusCode: 200,
     message: "Best course retrieved successfully",

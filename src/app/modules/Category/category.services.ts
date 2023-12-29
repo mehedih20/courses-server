@@ -3,6 +3,7 @@ import { checkToken } from "../User/user.utility";
 import { TCategory } from "./category.interface";
 import { Category } from "./category.model";
 
+//Creating category
 const createCategoryIntoDB = async (payload: TCategory, token: string) => {
   // Checking authorization
   const decoded = checkToken(token);
@@ -25,6 +26,7 @@ const createCategoryIntoDB = async (payload: TCategory, token: string) => {
   return responseData;
 };
 
+//Fetch all categories
 const getAllCategoriesFromDB = async () => {
   const result = await Category.find()
     .populate({ path: "createdBy", select: "_id username email role" })

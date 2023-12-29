@@ -5,11 +5,11 @@ const catchAsync = (func: RequestHandler) => {
   return (req: Request, res: Response, next: NextFunction) => {
     Promise.resolve(func(req, res, next)).catch((err) => {
       // Handling invalid categoryId error
-      if (err.message === "Invalid categoryId") {
+      if (err.message === "Category not found") {
         res.status(status.BAD_REQUEST).json({
           success: false,
           message: err.message,
-          errorMessage: "Please provide a valid and existing categoryId.",
+          errorMessage: "Please provide a categoryId for an existing category.",
           errorDetails: null,
           stack: null,
         });
@@ -39,7 +39,6 @@ const catchAsync = (func: RequestHandler) => {
       }
 
       //Handling password does not match
-
       if (err.message === "Incorrect password") {
         res.status(status.UNAUTHORIZED).json({
           success: false,

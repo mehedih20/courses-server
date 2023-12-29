@@ -11,7 +11,7 @@ const createCategory = catchAsync(async (req, res) => {
   const result = await createCategoryIntoDB(req.body, token as string);
 
   res.status(status.OK).json({
-    ssuccess: true,
+    success: true,
     statusCode: 201,
     message: "Category created successfully",
     data: result,
@@ -21,7 +21,7 @@ const createCategory = catchAsync(async (req, res) => {
 const getAllCategories = catchAsync(async (req, res) => {
   const result = await getAllCategoriesFromDB();
 
-  res.status(200).json({
+  res.status(status.OK).json({
     success: true,
     statusCode: 200,
     message: "Categories retrieved successfully",

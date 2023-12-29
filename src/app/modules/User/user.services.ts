@@ -5,6 +5,7 @@ import jwt from "jsonwebtoken";
 import bcrypt from "bcrypt";
 import { checkToken, getFormattedTime } from "./user.utility";
 
+//Register user
 const registerUserIntoDB = async (payload: TUser) => {
   const result = await User.create(payload);
   const filterdResult = await User.findById(result._id).select(
@@ -14,6 +15,7 @@ const registerUserIntoDB = async (payload: TUser) => {
   return filterdResult;
 };
 
+// Logging in user
 const loginUserService = async (payload: TUserLogin) => {
   const user = await User.findOne({ username: payload.username });
 
@@ -21,7 +23,7 @@ const loginUserService = async (payload: TUserLogin) => {
     throw new Error("User not found");
   }
 
-  //Checking if password
+  //Checking if the provided password is matched
   const passwordCheck = await User.checkHashedPassword(
     payload?.password,
     user?.password as string,
@@ -31,6 +33,7 @@ const loginUserService = async (payload: TUserLogin) => {
     throw new Error("Incorrect password");
   }
 
+  // Payload for jwt token
   const jwtPayload = {
     _id: user?._id,
     role: user?.role,
@@ -54,6 +57,7 @@ const loginUserService = async (payload: TUserLogin) => {
   };
 };
 
+// Change user password
 const changeUserPasswordService = async (
   payload: TPasswordChange,
   token: string,
@@ -74,7 +78,7 @@ const changeUserPasswordService = async (
     user.passwordHistory.currentPasswordCreatedAt,
   );
 
-  // checking current password
+  // verifying current password
   const currentPasswordCheck = await bcrypt.compare(
     payload.currentPassword,
     user.password,
@@ -86,13 +90,13 @@ const changeUserPasswordService = async (
     );
   }
 
+  //checking if new password matches the previous ones
   if (payload.currentPassword === payload.newPassword) {
     throw new Error(
       `Password change failed. Ensure the new password is unique and not among the last 2 used (last used on ${currentPasswordTime}).`,
     );
   }
 
-  //checking new password
   for (const item of user.passwordHistory.previousPasswords) {
     const checkResult = await bcrypt.compare(
       payload.newPassword,
@@ -112,6 +116,7 @@ const changeUserPasswordService = async (
     Number(config.bcrypt_salt_rounds),
   );
 
+  //creating password history collection
   const previousPasswordObj = {
     password: user.password,
     createdAt: user.passwordHistory.currentPasswordCreatedAt,

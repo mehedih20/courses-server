@@ -25,9 +25,10 @@ const createCourseIntoDB = async (payload: TCourse, token: string) => {
     throw new Error("Unauthorized Access");
   }
 
+  //Verifying the categoryId
   const checkCategoryIdExists = await Category.findById(payload.categoryId);
   if (!checkCategoryIdExists) {
-    throw new Error("Invalid categoryId");
+    throw new Error("Category not found");
   }
 
   const courseData = { ...payload, createdBy: decoded._id };
@@ -107,7 +108,7 @@ const getAllCoursesFromDB = async (query: Record<string, unknown>) => {
   const metaData = {
     page: Number(page),
     limit: Number(limit),
-    result: (await Course.find(querObj)).length,
+    total: (await Course.find(querObj)).length,
   };
 
   return { meta: metaData, data: searchQuery };

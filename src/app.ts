@@ -14,7 +14,9 @@ app.use(express.json());
 app.use("/api", router);
 
 app.get("/", (req: Request, res: Response) => {
-  res.send("Project authorization running successfully!");
+  res.send(
+    "Project courses with authentication and authorization running successfully!",
+  );
 });
 
 // Global error handler
