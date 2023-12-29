@@ -1,27 +1,23 @@
-import config from "../../config";
 import { User } from "../User/user.model";
+import { checkToken } from "../User/user.utility";
 import { TReview } from "./review.interface";
 import { Review } from "./review.model";
-import jwt, { JwtPayload } from "jsonwebtoken";
 
 // Creating review
 const createReviewIntoDB = async (payload: TReview, token: string) => {
-  if (!token) {
-    return null;
+  // Checking authorization
+  const decoded = checkToken(token);
+
+  if (!decoded) {
+    throw new Error("Unauthorized Access");
+  }
+  if (decoded?.role !== "user") {
+    throw new Error("Unauthorized Access");
   }
 
-  const decoded = jwt.verify(
-    token,
-    config.jwt_access_secret as string,
-  ) as JwtPayload;
-
-  if (decoded?.role !== "admin") {
-    return null;
-  }
-
-  const isUserExist = await User.findById(decoded._id);
+  const isUserExist = await User.findById(decoded?._id);
   if (!isUserExist) {
-    return null;
+    throw new Error("Unauthorized Access");
   }
 
   const reviewData = { ...payload, createdBy: decoded._id };

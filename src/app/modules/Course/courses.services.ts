@@ -5,28 +5,26 @@
 import config from "../../config";
 import { Review } from "../Review/review.model";
 import { User } from "../User/user.model";
+import { checkToken } from "../User/user.utility";
 import { TCourse } from "./courses.interface";
 import { Course } from "./courses.model";
 import jwt, { JwtPayload } from "jsonwebtoken";
 
 //Creating a course
 const createCourseIntoDB = async (payload: TCourse, token: string) => {
-  if (!token) {
-    return null;
+  // Checking authorization
+  const decoded = checkToken(token);
+
+  if (!decoded) {
+    throw new Error("Unauthorized Access");
   }
-
-  const decoded = jwt.verify(
-    token,
-    config.jwt_access_secret as string,
-  ) as JwtPayload;
-
   if (decoded?.role !== "admin") {
-    return null;
+    throw new Error("Unauthorized Access");
   }
 
   const isUserExist = await User.findById(decoded._id);
   if (!isUserExist) {
-    return null;
+    throw new Error("Unauthorized Access");
   }
 
   const courseData = { ...payload, createdBy: decoded._id };
@@ -158,22 +156,19 @@ const upadteCourseIntoDB = async (
   payload: Partial<TCourse>,
   token: string,
 ) => {
-  if (!token) {
-    return null;
+  // Checking authorization
+  const decoded = checkToken(token);
+
+  if (!decoded) {
+    throw new Error("Unauthorized Access");
   }
-
-  const decoded = jwt.verify(
-    token,
-    config.jwt_access_secret as string,
-  ) as JwtPayload;
-
   if (decoded?.role !== "admin") {
-    return null;
+    throw new Error("Unauthorized Access");
   }
 
   const isUserExist = await User.findById(decoded._id);
   if (!isUserExist) {
-    return null;
+    throw new Error("Unauthorized Access");
   }
 
   const { tags, details, ...remainingBasicData } = payload;

@@ -1,5 +1,6 @@
 import { Schema, model } from "mongoose";
 import {
+  TPassword,
   TPasswordChange,
   TPasswordHistory,
   TUser,
@@ -31,7 +32,7 @@ export const passwordChangeSchema = new Schema<TPasswordChange>({
   },
 });
 
-const passwordHistorySchema = new Schema<TPasswordHistory>(
+const passwordSchema = new Schema<TPassword>(
   {
     password: {
       type: String,
@@ -39,6 +40,22 @@ const passwordHistorySchema = new Schema<TPasswordHistory>(
     },
     createdAt: {
       type: Date,
+      required: true,
+    },
+  },
+  {
+    _id: false,
+  },
+);
+
+const passwordHistorySchema = new Schema<TPasswordHistory>(
+  {
+    currentPasswordCreatedAt: {
+      type: Date,
+      required: true,
+    },
+    previousPasswords: {
+      type: [passwordSchema],
     },
   },
   {
@@ -67,7 +84,7 @@ const userSchema = new Schema<TUser, UserModel>(
       enum: ["user", "admin"],
       default: "user",
     },
-    passwordHistory: [passwordHistorySchema],
+    passwordHistory: passwordHistorySchema,
   },
   {
     timestamps: true,
@@ -81,9 +98,11 @@ userSchema.pre("save", async function (next) {
     Number(config.bcrypt_salt_rounds),
   );
 
-  const password = this.password;
-  const time = new Date();
-  this.passwordHistory.unshift({ password, createdAt: time });
+  const currentPasswordCreatedAt = new Date();
+  this.passwordHistory = {
+    currentPasswordCreatedAt,
+    previousPasswords: this.passwordHistory?.previousPasswords || [],
+  };
 
   next();
 });

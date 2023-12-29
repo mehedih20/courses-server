@@ -1,10 +1,9 @@
 import config from "../../config";
-import ApplicationError from "../../config/ApplicationError";
 import { TPasswordChange, TUser, TUserLogin } from "./user.interface";
 import { User } from "./user.model";
-import jwt, { JwtPayload } from "jsonwebtoken";
+import jwt from "jsonwebtoken";
 import bcrypt from "bcrypt";
-import { getFormattedTime } from "./user.utility";
+import { checkToken, getFormattedTime } from "./user.utility";
 
 const registerUserIntoDB = async (payload: TUser) => {
   const result = await User.create(payload);
@@ -19,7 +18,7 @@ const loginUserService = async (payload: TUserLogin) => {
   const user = await User.findOne({ username: payload.username });
 
   if (!user) {
-    throw new ApplicationError("User not found");
+    throw new Error("User not found!");
   }
 
   //Checking if password
@@ -29,7 +28,7 @@ const loginUserService = async (payload: TUserLogin) => {
   );
 
   if (!passwordCheck) {
-    throw new ApplicationError("Password does not match");
+    throw new Error("Incorrect password!");
   }
 
   const jwtPayload = {
@@ -59,18 +58,16 @@ const changeUserPasswordService = async (
   payload: TPasswordChange,
   token: string,
 ) => {
-  if (!token) {
-    throw new Error("Token not found");
-  }
+  // Checking authorization
+  const decoded = checkToken(token);
 
-  const decoded = jwt.verify(
-    token,
-    config.jwt_access_secret as string,
-  ) as JwtPayload;
+  if (!decoded) {
+    throw new Error("Unauthorized Access");
+  }
 
   const user = await User.findById(decoded._id);
   if (!user) {
-    throw new Error("User not found");
+    throw new Error("Unauthorized Access");
   }
 
   // checking current password
@@ -80,21 +77,25 @@ const changeUserPasswordService = async (
   );
 
   if (!currentPasswordCheck) {
-    const time = getFormattedTime(user.passwordHistory[0].createdAt);
+    const time = getFormattedTime(
+      user.passwordHistory.currentPasswordCreatedAt,
+    );
     throw new Error(
       `Password change failed. Ensure the new password is unique and not among the last 2 used (last used on ${time}).`,
     );
   }
 
   //checking new password
-  for (const item of user.passwordHistory) {
+  for (const item of user.passwordHistory.previousPasswords) {
     const checkResult = await bcrypt.compare(
       payload.newPassword,
       item.password,
     );
 
     if (checkResult) {
-      const time = getFormattedTime(item.createdAt);
+      const time = getFormattedTime(
+        user.passwordHistory.currentPasswordCreatedAt,
+      );
       throw new Error(
         `Password change failed. Ensure the new password is unique and not among the last 2 used (last used on ${time}).`,
       );
@@ -107,16 +108,23 @@ const changeUserPasswordService = async (
     Number(config.bcrypt_salt_rounds),
   );
 
-  const passwordLimit = 3;
+  const previousPasswordObj = {
+    password: user.password,
+    createdAt: user.passwordHistory.currentPasswordCreatedAt,
+  };
 
-  user.passwordHistory.unshift({
-    password: newHashedPassword,
-    createdAt: new Date(),
-  });
+  const previousPasswordArray = user.passwordHistory.previousPasswords;
 
-  if (user.passwordHistory.length > passwordLimit) {
-    user.passwordHistory.pop();
+  previousPasswordArray.unshift(previousPasswordObj);
+
+  if (previousPasswordArray.length > 2) {
+    previousPasswordArray.pop();
   }
+
+  const newPasswordHistoryObj = {
+    currentPasswordCreatedAt: new Date(),
+    previousPasswords: previousPasswordArray,
+  };
 
   const result = await User.findOneAndUpdate(
     {
@@ -125,7 +133,7 @@ const changeUserPasswordService = async (
     {
       $set: {
         password: newHashedPassword,
-        passwordHistory: user.passwordHistory,
+        passwordHistory: newPasswordHistoryObj,
       },
     },
     {

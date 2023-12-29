@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import {
   createCourseIntoDB,
   getAllCoursesFromDB,
@@ -9,26 +10,26 @@ import catchAsync from "../../utils/catchAsync";
 import status from "http-status";
 
 const createCourse = catchAsync(async (req, res) => {
-  const token = req.headers.authorization;
-  const result = await createCourseIntoDB(req.body, token as string);
+  try {
+    const token = req.headers.authorization;
+    const result = await createCourseIntoDB(req.body, token as string);
 
-  if (result === null) {
+    res.status(status.OK).json({
+      success: true,
+      statusCode: 201,
+      message: "Course created successfully",
+      data: result,
+    });
+  } catch (err: any) {
     res.status(status.UNAUTHORIZED).json({
       success: false,
-      message: "Unauthorized Access",
+      message: err.message,
       errorMessage:
         "You do not have the necessary permissions to access this resource.",
       errorDetails: null,
       stack: null,
     });
   }
-
-  res.status(201).json({
-    success: true,
-    statusCode: 201,
-    message: "Course created successfully",
-    data: result,
-  });
 });
 
 const getAllCourses = catchAsync(async (req, res) => {
@@ -67,28 +68,31 @@ const getBestCourse = catchAsync(async (req, res) => {
 });
 
 const updateCourse = catchAsync(async (req, res) => {
-  const { courseId } = req.params;
-  const token = req.headers.authorization;
+  try {
+    const { courseId } = req.params;
+    const token = req.headers.authorization;
+    const result = await upadteCourseIntoDB(
+      courseId,
+      req.body,
+      token as string,
+    );
 
-  const result = await upadteCourseIntoDB(courseId, req.body, token as string);
-
-  if (result === null) {
+    res.status(status.OK).json({
+      success: true,
+      statusCode: 200,
+      message: "Course updated successfully",
+      data: result,
+    });
+  } catch (error: any) {
     res.status(status.UNAUTHORIZED).json({
       success: false,
-      message: "Unauthorized Access",
+      message: error.message,
       errorMessage:
         "You do not have the necessary permissions to access this resource.",
       errorDetails: null,
       stack: null,
     });
   }
-
-  res.status(200).json({
-    success: true,
-    statusCode: 200,
-    message: "Course updated successfully",
-    data: result,
-  });
 });
 
 export {

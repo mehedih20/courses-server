@@ -1,26 +1,22 @@
-import config from "../../config";
 import { User } from "../User/user.model";
+import { checkToken } from "../User/user.utility";
 import { TCategory } from "./category.interface";
 import { Category } from "./category.model";
-import jwt, { JwtPayload } from "jsonwebtoken";
 
 const createCategoryIntoDB = async (payload: TCategory, token: string) => {
-  if (!token) {
-    return null;
+  // Checking authorization
+  const decoded = checkToken(token);
+
+  if (!decoded) {
+    throw new Error("Unauthorized Access");
   }
-
-  const decoded = jwt.verify(
-    token,
-    config.jwt_access_secret as string,
-  ) as JwtPayload;
-
   if (decoded?.role !== "admin") {
-    return null;
+    throw new Error("Unauthorized Access");
   }
 
   const isUserExist = await User.findById(decoded._id);
   if (!isUserExist) {
-    return null;
+    throw new Error("Unauthorized Access");
   }
 
   const categoryData = { ...payload, createdBy: decoded._id };
